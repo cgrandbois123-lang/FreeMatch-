@@ -1,0 +1,12 @@
+CREATE TABLE users (id SERIAL PRIMARY KEY, email VARCHAR(255) UNIQUE NOT NULL, username VARCHAR(100) UNIQUE NOT NULL, first_name VARCHAR(100), last_name VARCHAR(100), password_hash VARCHAR(255) NOT NULL, age INTEGER, gender VARCHAR(20), bio TEXT, location VARCHAR(255), latitude DECIMAL(10,8), longitude DECIMAL(11,8), profile_photo_url VARCHAR(500), preferences JSONB, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_location ON users(latitude, longitude);
+CREATE TABLE likes (id SERIAL PRIMARY KEY, liker_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, liked_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE(liker_id, liked_id), CHECK (liker_id != liked_id));
+CREATE INDEX idx_likes_liker ON likes(liker_id);
+CREATE INDEX idx_likes_liked ON likes(liked_id);
+CREATE TABLE matches (id SERIAL PRIMARY KEY, user_a_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, user_b_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, matched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, is_active BOOLEAN DEFAULT TRUE, CHECK (user_a_id < user_b_id));
+CREATE INDEX idx_matches_users ON matches(user_a_id, user_b_id);
+CREATE INDEX idx_matches_active ON matches(is_active);
+CREATE TABLE messages (id SERIAL PRIMARY KEY, match_id INTEGER NOT NULL REFERENCES matches(id) ON DELETE CASCADE, sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, content TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, is_read BOOLEAN DEFAULT FALSE);
+CREATE INDEX idx_messages_match ON messages(match_id);
+CREATE INDEX idx_messages_sender ON messages(sender_id);
