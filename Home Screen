@@ -1,1 +1,108 @@
+import React, { useState, useRef } from 'react';
+import profilesData from './sample-profiles';
+import './HomeScreen.css';
 
+export default function HomeScreen() {
+  const [profiles, setProfiles] = useState(profilesData);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isMatch, setIsMatch] = useState(null);
+  const cardRef = useRef(null);
+
+  const handleAction = (action) => {
+    if (currentIndex >= profiles.length) return;
+    const current = profiles[currentIndex];
+
+    // Simulate like/match logic
+    if (action === 'like') {
+      const matched = Math.random() < 0.25; // demo: 25% chance of match
+      if (matched) setIsMatch(current);
+    }
+
+    // Advance
+    setCurrentIndex((i) => i + 1);
+  };
+
+  const resetDeck = () => {
+    setCurrentIndex(0);
+    setIsMatch(null);
+  };
+
+  const currentProfile = profiles[currentIndex];
+
+  return (
+    <main className="home-root" aria-live="polite">
+      <header className="home-header">
+        <h1 className="app-title">FreeMatch</h1>
+        <nav className="top-actions" aria-label="Top actions">
+          <button className="icon-btn" aria-label="Settings">⚙️</button>
+          <button className="icon-btn" aria-label="Messages">💬</button>
+        </nav>
+      </header>
+
+      <section className="deck-area" aria-label="Profile deck">
+        {currentProfile ? (
+          <article
+            className="profile-card"
+            ref={cardRef}
+            role="region"
+            aria-labelledby={`name-${currentProfile.id}`}
+          >
+            <div
+              className="photo"
+              style={{ backgroundImage: `url(${currentProfile.photos[0]})` }}
+              role="img"
+              aria-label={`${currentProfile.name}, ${currentProfile.age}`}
+            />
+            <div className="profile-meta">
+              <h2 id={`name-${currentProfile.id}`}>{currentProfile.name}, <span className="age">{currentProfile.age}</span></h2>
+              <p className="location">{currentProfile.location}</p>
+              <p className="bio">{currentProfile.bio}</p>
+            </div>
+          </article>
+        ) : (
+          <div className="empty-state">
+            <p>No more profiles nearby.</p>
+            <button className="primary" onClick={resetDeck}>Refresh</button>
+          </div>
+        )}
+      </section>
+
+      <section className="controls" aria-label="Actions">
+        <button
+          className="control-btn dislike"
+          onClick={() => handleAction('dislike')}
+          aria-label="Dislike"
+        >
+          ✖️
+        </button>
+        <button
+          className="control-btn super"
+          onClick={() => handleAction('super')}
+          aria-label="Super like"
+        >
+          ⭐
+        </button>
+        <button
+          className="control-btn like"
+          onClick={() => handleAction('like')}
+          aria-label="Like"
+        >
+          ❤️
+        </button>
+      </section>
+
+      {isMatch && (
+        <div className="match-modal" role="dialog" aria-modal="true" aria-label="It's a match">
+          <div className="match-card">
+            <h3>It's a match!</h3>
+            <p>You and <strong>{isMatch.name}</strong> liked each other.</p>
+            <div className="match-actions">
+              <button className="primary" onClick={() => setIsMatch(null)}>Send Message</button>
+              <button className="secondary" onClick={() => setIsMatch(null)}>Keep Browsing</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}
